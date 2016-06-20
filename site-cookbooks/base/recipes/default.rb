@@ -44,7 +44,7 @@ end
 # Setup users to have sudo powers
 node.normal[:authorization] = {
 	:sudo =>{
-		:users => node.normal[:base][:users] << 'vagrant' , 
+		:users => node.normal[:base][:users].to_a << 'vagrant' ,
 		"groups" => ["developers"],
 		"passwordless" => true,
 		"include_sudoers_d" => true,
@@ -55,3 +55,13 @@ node.normal[:authorization] = {
 	}
 }
 include_recipe "sudo"
+
+packages = node.normal[:base][:packages]
+
+if packages.is_a? String
+	packages = packages.split(' ')
+end
+
+packages.each do |package|
+	package package
+end

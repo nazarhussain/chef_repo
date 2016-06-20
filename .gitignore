@@ -16,3 +16,4 @@ nodes/*.json
 /tmp
 
 .vagrant/
+.idea/

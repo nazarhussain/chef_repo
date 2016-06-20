@@ -1,20 +1,23 @@
 name             'base'
-maintainer       'Microgigz'
+maintainer       'Nazar Hussain'
 maintainer_email 'nazarhussain@gmail.com'
 license          'All rights reserved'
 description      'Installs/Configures base machines uesrs settings'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 version          '0.1.0'
 recipe           'base', 'Deafult users and groups settings'
-recipe 			 'base::mysql', 'Make it easy to install mysql'
+recipe           'base::ruby', 'Ruby and rbenv settings'
+recipe           'base::mysql', 'Make it easy to install mysql'
 
-depends "sudo"
-depends "apt"
+depends 'sudo'
+depends 'apt'
 depends 'openssl'
-depends "mysql"
-depends "postgresql"
-depends "database"
+depends 'mysql'
+depends 'postgresql'
+depends 'database'
 depends 'rbenv'
 depends 'nginx'
 depends 'bluepill'
 depends 'logrotate'
+depends 'build-essential'
+depends 'poise-monit'

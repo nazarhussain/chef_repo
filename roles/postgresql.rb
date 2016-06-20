@@ -1,4 +1,4 @@
 name 'mysql'
 description 'MySQL server for apps'
-run_list "recipe[build-essential]", "recipe[postgresql::server]", "recipe[postgresql::client]"
-default_attributes("postgresql" => { "config" =>{ "listen_addresses" => "127.0.0.1" }})
+run_list "recipe[base::postgresql]"
+default_attributes("postgresql" => { "version" => "9.3", "config" =>{ "listen_addresses" => "127.0.0.1", "port" => 5432 }})

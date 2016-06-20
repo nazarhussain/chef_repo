@@ -1,7 +1,0 @@
-{
-  "authorization": {
-    "sudo": {
-      "users": ["<your sudo user>"]
-    }
-  }
-}

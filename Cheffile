@@ -3,27 +3,17 @@
 
 site 'http://community.opscode.com/api/v1'
 
-cookbook 'mysql'
-cookbook 'postgresql'
-cookbook 'database'
-cookbook 'sudo'
-cookbook 'nginx'
-cookbook 'redisio', git: 'https://github.com/nazarhussain/redisio.git'
-cookbook 'ark', git: 'https://github.com/nazarhussain/ark.git'
-cookbook 'java'
-cookbook 'rbenv', '~> 1.4.0'
-cookbook 'logrotate'
-cookbook 'elasticsearch'
-cookbook 'bluepill'
-
-# cookbook 'chef-client'
-
-# cookbook 'apache2', '>= 1.0.0'
-
-# cookbook 'rvm',
-#   :git => 'https://github.com/fnichol/chef-rvm'
-
-# cookbook 'postgresql',
-#   :git => 'https://github.com/findsyou/cookbooks',
-#   :ref => 'postgresql-improvements'
-
+cookbook 'mysql', '~> 7.1.1'
+cookbook 'postgresql', '~> 4.0.6'
+cookbook 'database', '~> 5.1.2'
+cookbook 'sudo', '~> 2.9.0'
+cookbook 'nginx', '~> 2.7.6'
+cookbook 'redisio', '~> 2.4.2'
+cookbook 'ark', '~> 1.1.0'
+cookbook 'java', '~> 1.39.0'
+cookbook 'rbenv', '~> 1.7.1'
+cookbook 'logrotate', '~> 1.9.2'
+cookbook 'elasticsearch', '~> 2.3.2'
+cookbook 'bluepill', '~> 2.4.3'
+cookbook 'poise-monit', '~> 1.5.2'
+cookbook 'build-essential', '= 2.4.0'
