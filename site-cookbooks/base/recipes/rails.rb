@@ -132,7 +132,7 @@ if applications
 
       # Setting up puma startup script
       template "#{applications_root}/#{app}/shared/scripts/puma.sh" do
-        mode 0644
+        mode 0750
         source "app_puma.sh.erb"
         variables(
             :name => app,
