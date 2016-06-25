@@ -14,24 +14,27 @@ include_recipe 'apt'
 # Set the global DB for db type
 node.normal[:db_type] = 'postgresql'
 
-db_pass = node[:postgresql][:password]
+normal_password = node[:postgresql][:password][:postgres]
 
 # Check for the password
-db_pass = secure_password unless db_pass
+normal_password = secure_password unless normal_password
 
-# require('openssl')
-#
-# db_pass = OpenSSL::Digest::MD5.digest("#{db_pass}postgres")
-#
-# puts '%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-# puts db_pass
-# puts '%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+require('openssl')
 
-node.normal[:postgresql][:password] = {:postgres => db_pass}
+# echo -n 'password''postgres' | openssl md5 | sed -e 's/.* /md5/'
+
+db_pass = OpenSSL::Digest::MD5.digest("#{normal_password}postgres")
+db_pass = "md5#{db_pass}"
+
+node.default[:postgresql][:password][:postgres] = db_pass
+node.save
 
 # Install MySql
 include_recipe 'postgresql::client'
 include_recipe 'postgresql::server'
+
+node.default[:postgresql][:password][:postgres] = normal_password
+node.save
 
 
 # Create and setup DB users
@@ -42,7 +45,7 @@ db_connection = {
     :host => node.normal[:postgresql][:config][:listen_addresses],
     :port => node.normal[:postgresql][:config][:port],
     :username => 'postgres',
-    :password => db_pass
+    :password => node.normal[:postgresql][:password][:postgres]
 }
 
 db_users.each do |db_user|
