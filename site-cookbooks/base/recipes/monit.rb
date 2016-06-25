@@ -33,21 +33,23 @@ if applications
     shared_path = "#{applications_root}/#{app}/shared"
     current_path = "#{applications_root}/#{app}/current"
 
-    monit_check "#{app}_puma_master" do
-      with "with pidfile #{shared_path}/pids/puma.id"
-      start_program "#{shared_path}/scripts/puma.sh start"
-      stop_program "#{shared_path}/scripts/puma.sh stop"
-      extra ['group developers' ]
-    end
+    if !app_info['backend'].nil? and app_info['backend'] != true
+      monit_check "#{app}_puma_master" do
+        with "with pidfile #{shared_path}/pids/puma.id"
+        start_program "#{shared_path}/scripts/puma.sh start"
+        stop_program "#{shared_path}/scripts/puma.sh stop"
+        extra ['group developers' ]
+      end
 
-    (1..(app_info['number_of_workers'] || 2)).each do |i|
-      index = i - 1
+      (1..(app_info['number_of_workers'] || 2)).each do |i|
+        index = i - 1
 
-      monit_check "#{app}_puma_worker_#{index}" do
-        with "with pidfile #{shared_path}/pids/puma_worker_#{index}.id"
-        start_program false
-        stop_program false
-        check "if cpu is greater than 70% for 5 cycles then exec \"#{shared_path}/scripts/puma.sh kill_worker #{index}\""
+        monit_check "#{app}_puma_worker_#{index}" do
+          with "with pidfile #{shared_path}/pids/puma_worker_#{index}.id"
+          start_program false
+          stop_program false
+          check "if cpu is greater than 70% for 5 cycles then exec \"#{shared_path}/scripts/puma.sh kill_worker #{index}\""
+        end
       end
     end
 
