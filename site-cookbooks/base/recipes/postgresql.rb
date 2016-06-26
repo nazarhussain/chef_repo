@@ -49,23 +49,30 @@ db_connection = {
 }
 
 db_users.each do |db_user|
-	postgresql_database_user db_user do
-		connection db_connection
-		password node[:postgresql][:users][db_user][:password]
-		action :create
-	end
+  postgresql_database_user db_user do
+    connection db_connection
+    password node[:postgresql][:users][db_user][:password]
+    action :create
+  end
 
-	node[:postgresql][:users][db_user][:databases].each do |db|
-		postgresql_database db do
-			connection db_connection
-			action :create
-		end
+  node[:postgresql][:users][db_user][:databases].each do |db|
+    postgresql_database db do
+      connection db_connection
+      action :create
+    end
 
-		postgresql_database_user db_user do
-			connection db_connection 
-			database_name db 
-			privileges [:all] 
-			action :grant 
-		end
-	end
+    postgresql_database_user db_user do
+      connection db_connection
+      database_name db
+      privileges [:all, ]
+      action :grant
+    end
+
+    postgresql_database_user db_user do
+      connection db_connection
+      database_name db
+      privileges [:all, ]
+      action :grant
+    end
+  end
 end

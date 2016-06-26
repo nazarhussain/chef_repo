@@ -31,7 +31,7 @@ end
 if applications
   applications.each do |app, app_info|
     rails_env = app_info['rails_env'] || "production"
-    deploy_user = app_info['deploy_user'] || "deploy"
+    deploy_user = app_info['deploy_user']
     app_env = app_info['env'].dup || {}
     app_env['RAILS_ENV'] = rails_env
 
@@ -47,11 +47,18 @@ if applications
       owner deploy_user
     end
 
-    ['config', 'shared', 'shared/config', 'shared/sockets', 'shared/pids', 'shared/log', 'shared/system', 'shared/scripts', 'releases'].each do |dir|
+    ['config', 'shared', 'shared/config', 'shared/sockets', 'shared/pids', 'shared/cache', 'shared/log', 'shared/system', 'shared/scripts', 'shared/tmp', 'releases'].each do |dir|
       directory "#{applications_root}/#{app}/#{dir}" do
         recursive true
         group deploy_user
         owner deploy_user
+      end
+    end
+
+    ['sockets', 'pids', 'cache'].each do |dir|
+      link "#{applications_root}/#{app}/shared/tmp/#{dir}" do
+        to "#{applications_root}/#{app}/shared/#{dir}"
+        link_type :symbolic
       end
     end
 
@@ -68,7 +75,7 @@ if applications
       end
 
       if node[:db_type] == 'postgresql'
-        db_info['adapter'] = 'postgres'
+        db_info['adapter'] = 'postgresql'
         db_info['host'] = node[:postgresql][:config][:listen_addresses] unless db_info['host']
         db_info['username'] = node[:postgresql][:users].map{|user, info| user if info[:databases].include?(db_info['database']) }.reject{|a| a.nil?}.first unless db_info['username']
         db_info['password'] = node[:postgresql][:users].map{|user, info| info[:password] if info[:databases].include?(db_info['database']) }.reject{|a| a.nil?}.first unless db_info['password']
@@ -91,16 +98,16 @@ if applications
       # Loading up SSL Information
       if app_info['ssl_info']
         template "#{applications_root}/#{app}/shared/config/certificate.crt" do
-          owner "deploy"
-          group "deploy"
+          owner deploy_user
+          group 'developers'
           mode 0644
           source "app_cert.crt.erb"
           variables :app_crt=> app_info['ssl_info']['crt']
         end
 
         template "#{applications_root}/#{app}/shared/config/certificate.key" do
-          owner "deploy"
-          group "deploy"
+          owner deploy_user
+          group 'developers'
           mode 0644
           source "app_cert.key.erb"
           variables :app_key=> app_info['ssl_info']['key']

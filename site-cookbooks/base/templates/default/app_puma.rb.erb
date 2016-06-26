@@ -120,7 +120,7 @@ workers <%= @number_of_workers %>
 on_worker_boot do |worker_index|
 
   # write worker pid
-  File.open("'<%= @applications_root %>/<%= @name %>/shared/pids/puma_worker_#{worker_index}.pid", "w") { |f| f.puts Process.pid }
+  File.open("<%= @applications_root %>/<%= @name %>/shared/pids/puma_worker_#{worker_index}.pid", "w") { |f| f.puts Process.pid }
 
   # reconnect to redis
   Redis.current.client.reconnect
@@ -150,6 +150,7 @@ end
 # phased restart feature. (off by default)
 
 # preload_app
+preload_app!
 
 # Additional text to display in process listing
 #

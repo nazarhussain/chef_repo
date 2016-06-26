@@ -19,7 +19,12 @@ server {
     proxy_pass http://<%= @name %>_app;
   }
 
-  error_page 500 502 503 504 /500.html
+  error_page 500 502 503 504 /500.html;
+  location = /500.html {
+    root <%= @applications_root %>/<%= @name %>/current/public;
+    internal;
+  }
+
   client_max_body_size 4G;
   keepalive_timeout 10;
 }
@@ -55,7 +60,12 @@ server {
     proxy_pass http://<%= @name %>_app;
   }
 
-  error_page 500 502 503 504 /500.html
+  error_page 500 502 503 504 /500.html;
+  location = /500.html {
+    root <%= @applications_root %>/<%= @name %>/current/public;
+    internal;
+  }
+
   client_max_body_size 4G;
   keepalive_timeout 10;
 }
