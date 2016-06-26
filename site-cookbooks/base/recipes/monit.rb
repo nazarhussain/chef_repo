@@ -64,11 +64,11 @@ if applications
           --logfile #{shared_path}/log/sidekiq_#{sidekiq_name}.log
           #{sidekiq_info[:queues].map{|q| " --queue #{q} "}.join(' ')}
           #{"--require #{sidekiq_info[:require]}" if sidekiq_info[:require]}
-          --daemon
+          --daemon'
         EOS
 
         stop_script = <<-EOS
-          /bin/bash -l -c 'cd #{current_path} && bundle exec sidekiqctl stop #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid 15
+          /bin/bash -l -c 'cd #{current_path} && bundle exec sidekiqctl stop #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid 15'
         EOS
 
         monit_check "#{app}_sidekiq_#{sidekiq_name}" do
