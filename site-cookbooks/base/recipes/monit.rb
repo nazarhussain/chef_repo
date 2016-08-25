@@ -84,7 +84,7 @@ if applications
 
         if sidekiq_info[:queues]
           start_script = <<-EOS
-          /bin/bash -l -c 'cd #{current_path} && bundle exec sidekiq
+          /bin/su - #{deploy_user} -c 'cd #{current_path} && bundle exec sidekiq
           --concurrency #{sidekiq_info[:concurrency]}
           --pidfile #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid
           --environment #{rails_env}
@@ -97,7 +97,7 @@ if applications
 
         if sidekiq_info[:config]
           start_script = <<-EOS
-          /bin/bash -l -c 'cd #{current_path} && bundle exec sidekiq
+          /bin/su - #{deploy_user} -c 'cd #{current_path} && bundle exec sidekiq
           -C #{sidekiq_info[:config]}
           --pidfile #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid
           --environment #{rails_env}
@@ -108,7 +108,7 @@ if applications
         end
 
         stop_script = <<-EOS
-          /bin/bash -l -c 'cd #{current_path} && bundle exec sidekiqctl stop #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid 15'
+          /bin/su - #{deploy_user} -c 'cd #{current_path} && bundle exec sidekiqctl stop #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid 15'
         EOS
 
         monit_check "#{app}_sidekiq_#{sidekiq_name}" do
@@ -125,7 +125,7 @@ if applications
       app_info[:rake].each do |task|
         task_name = "rake_#{task.gsub(':', '_').downcase}"
 
-        start_script = "/bin/bash -l -c 'cd #{current_path} && bundle exec rake #{task} RAILS_ENV=#{rails_env}'"
+        start_script = "/bin/su - #{deploy_user} -c 'cd #{current_path} && bundle exec rake #{task} RAILS_ENV=#{rails_env}'"
 
         stop_script = "/bin/ps aux | grep -ie 'rake #{task}' | awk '{print $2}' | xargs kill -9"
 
