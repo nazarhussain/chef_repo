@@ -7,6 +7,13 @@ default_attributes(
         event_slots: 0,
         port: 2812,
         username: 'monit',
-        password: ''
+        password: '',
+        email: {
+        	server: '',
+        	port: '',
+        	username: '',
+        	password: '', 
+        	recipients: ''
+        }
     }
 )

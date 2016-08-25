@@ -4,7 +4,7 @@
 #
 # The default is the current directory.
 #
-directory '<%= @applications_root %>/<%= @name %>/current/public/'
+directory '<%= @applications_root %>/<%= @name %>/current'
 
 # Use an object or block as the rack application. This allows the
 # config file to be the application itself.
@@ -22,7 +22,7 @@ directory '<%= @applications_root %>/<%= @name %>/current/public/'
 # The default is “config.ru”.
 #
 # rackup '/u/apps/lolcat/config.ru'
-rackup '<%= @applications_root %>/<%= @name %>/current/config.ru'
+# rackup '<%= @applications_root %>/<%= @name %>/current/config.ru'
 
 # Set the environment in which the rack's app will run. The value must be a string.
 #
@@ -53,7 +53,7 @@ state_path '<%= @applications_root %>/<%= @name %>/shared/pids/puma.state'
 #
 # stdout_redirect '/u/apps/lolcat/log/stdout', '/u/apps/lolcat/log/stderr'
 # stdout_redirect '/u/apps/lolcat/log/stdout', '/u/apps/lolcat/log/stderr', true
-stdout_redirect '<%= @applications_root %>/<%= @name %>/shared/log/puma_<%= @rails_env %>.log'
+stdout_redirect '<%= @applications_root %>/<%= @name %>/shared/log/puma_<%= @rails_env %>.log', '<%= @applications_root %>/<%= @name %>/shared/log/puma_<%= @rails_env %>.error.log', true
 
 # Disable request logging.
 #

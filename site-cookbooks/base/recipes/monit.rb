@@ -14,6 +14,30 @@ monit 'monit' do
   provider :system
 end
 
+directory '/etc/monit/conf.d' do
+  recursive true
+  action :delete
+end
+
+directory '/etc/monit/conf.d' do
+  action :create
+end
+
+monit_config 'mail_server' do
+  content <<-EOH
+SET MAILSERVER #{m_config[:mail][:server]} PORT #{m_config[:mail][:port]}
+USERNAME #{m_config[:mail][:username]} 
+PASSWORD #{m_config[:mail][:password]}
+USING tlsv1 WITH timeout 30 seconds
+EOH
+end
+
+m_config[:mail][:recipients].each do |r|
+  monit_config r do
+    content "set alert #{r} not on { instance, action }  "
+  end
+end
+
 # Setting default values
 applications_root = node[:rails][:applications_root]
 applications = node[:rails][:applications]
@@ -32,6 +56,7 @@ if applications
     rails_env = app_info['rails_env'] || "production"
     shared_path = "#{applications_root}/#{app}/shared"
     current_path = "#{applications_root}/#{app}/current"
+    deploy_user = app_info['deploy_user']
 
     if !app_info['backend'].nil? and app_info['backend'] != true
       monit_check "#{app}_puma_master" do
@@ -56,7 +81,9 @@ if applications
 
     if app_info[:sidekiq]
       app_info[:sidekiq].each do |sidekiq_name, sidekiq_info|
-        start_script = <<-EOS
+
+        if sidekiq_info[:queues]
+          start_script = <<-EOS
           /bin/bash -l -c 'cd #{current_path} && bundle exec sidekiq
           --concurrency #{sidekiq_info[:concurrency]}
           --pidfile #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid
@@ -65,7 +92,20 @@ if applications
           #{sidekiq_info[:queues].map{|q| " --queue #{q} "}.join(' ')}
           #{"--require #{sidekiq_info[:require]}" if sidekiq_info[:require]}
           --daemon'
-        EOS
+          EOS
+        end
+
+        if sidekiq_info[:config]
+          start_script = <<-EOS
+          /bin/bash -l -c 'cd #{current_path} && bundle exec sidekiq
+          -C #{sidekiq_info[:config]}
+          --pidfile #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid
+          --environment #{rails_env}
+          --logfile #{shared_path}/log/sidekiq_#{sidekiq_name}.log
+          #{"--require #{sidekiq_info[:require]}" if sidekiq_info[:require]}
+          --daemon'
+          EOS
+        end
 
         stop_script = <<-EOS
           /bin/bash -l -c 'cd #{current_path} && bundle exec sidekiqctl stop #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid 15'
@@ -73,11 +113,28 @@ if applications
 
         monit_check "#{app}_sidekiq_#{sidekiq_name}" do
           with "with pidfile #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid"
-          start_program start_script.gsub(/[\n|\s+]/,' ')
-          stop_program stop_script.gsub(/[\n|\s+]/,' ')
+          start_program start_script.gsub(/[\n\s+]/,' ')
+          stop_program stop_script.gsub(/[\n\s+]/,' ')
           check "if cpu is greater than 70% for 5 cycles then restart"
-          extra ["group #{app}" ]
           extra ["group #{app}-sidekiq" ]
+        end
+      end
+    end
+
+    if app_info[:rake]
+      app_info[:rake].each do |task|
+        task_name = "rake_#{task.gsub(':', '_').downcase}"
+
+        start_script = "/bin/bash -l -c 'cd #{current_path} && bundle exec rake #{task} RAILS_ENV=#{rails_env}'"
+
+        stop_script = "/bin/ps aux | grep -ie 'rake #{task}' | awk '{print $2}' | xargs kill -9"
+
+        monit_check "#{app}_#{task_name}" do
+          with "matching 'rake #{task}' "
+          start_program start_script.gsub(/[\n\s+]/,' ')
+          stop_program stop_script.gsub(/[\n\s+]/,' ')
+          check "if cpu is greater than 70% for 5 cycles then restart"
+          extra ["group #{app}-rake" ]
         end
       end
     end

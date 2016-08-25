@@ -7,7 +7,7 @@ RAILS_ENV=<%= @rails_env %>
 USER=<%= @deploy_user %>
 APP_DIR=<%= "#{@applications_root}/#{@name}/current" %>
 PUMA_CONFIG_FILE=<%= "#{@applications_root}/#{@name}/shared/config/puma.rb" %>
-PUMA_PID_FILE=<%= "#{@applications_root}/#{@name}/shared/pids/puma.id" %>
+PUMA_PID_FILE=<%= "#{@applications_root}/#{@name}/shared/pids/puma.pid" %>
 PUMA_SOCKET=<%= "#{@applications_root}/#{@name}/shared/sockets/puma.sock" %>
 
 # check if puma process is running

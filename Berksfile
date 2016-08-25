@@ -1,7 +1,4 @@
-#!/usr/bin/env ruby
-#^syntax detection
-
-site 'http://community.opscode.com/api/v1'
+source 'https://supermarket.chef.io'
 
 cookbook 'mysql', '~> 7.1.1'
 cookbook 'postgresql', '~> 4.0.6'
@@ -16,4 +13,4 @@ cookbook 'logrotate', '~> 1.9.2'
 cookbook 'elasticsearch', '~> 2.3.2'
 cookbook 'bluepill', '~> 2.4.3'
 cookbook 'poise-monit', '~> 1.5.2'
-cookbook 'build-essential', '= 2.4.0'
+cookbook 'mongodb3', '~> 5.3.0'

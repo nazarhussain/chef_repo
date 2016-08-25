@@ -2,9 +2,9 @@
 
 ```
 bundle install
-librarina-chef install
-knife solo prepare root@ip 
-knife solo cook root@ip 
+bundle exec berks install
+bundle exec knife solo prepare root@ip 
+bundle exec knife solo cook root@ip 
 ```
 To test
 
