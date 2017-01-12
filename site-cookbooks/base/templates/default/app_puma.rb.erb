@@ -122,8 +122,10 @@ on_worker_boot do |worker_index|
   # write worker pid
   File.open("<%= @applications_root %>/<%= @name %>/shared/pids/puma_worker_#{worker_index}.pid", "w") { |f| f.puts Process.pid }
 
+  <% if @reset_redis %>
   # reconnect to redis
   Redis.current.client.reconnect
+  <% end %>
 
   ActiveSupport.on_load(:active_record) do
     ActiveRecord::Base.establish_connection

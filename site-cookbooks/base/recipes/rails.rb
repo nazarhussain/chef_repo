@@ -93,8 +93,13 @@ if applications
       end
     end
 
-
     if !app_info['backend'].nil? and app_info['backend'] != true
+
+      ssl_extras = []
+      enable_ssl = false
+      reset_redis = app_info['reset_redis'] || false
+      redirect_to_https = false
+
       # Loading up SSL Information
       if app_info['ssl_info']
         template "#{applications_root}/#{app}/shared/config/certificate.crt" do
@@ -112,13 +117,22 @@ if applications
           source "app_cert.key.erb"
           variables :app_key=> app_info['ssl_info']['key']
         end
+
+        enable_ssl = true
+        ssl_extras = app_info['ssl_info']['extras'] || []
+        redirect_to_https = app_info['ssl_info']['redirect_to_https'] || false
       end
 
 
       # Enable and set the Nginx
       template "/etc/nginx/sites-available/#{app}.conf" do
         source "app_nginx.conf.erb"
-        variables :name => app, :domain_names => app_info['domain_names'], :applications_root=> applications_root, :enable_ssl => File.exists?("#{applications_root}/#{app}/shared/config/certificate.crt")
+        variables :name => app,
+                  :domain_names => app_info['domain_names'],
+                  :applications_root=> applications_root,
+                  :enable_ssl => enable_ssl,
+                  :ssl_extras => ssl_extras,
+                  :redirect_to_https => redirect_to_https
         notifies :reload, resources(:service => "nginx")
       end
 
@@ -133,7 +147,8 @@ if applications
           :applications_root=> applications_root,
           :number_of_workers => app_info['number_of_workers'] || 2,
           :min_threads => app_info['min_threads'] || 3,
-          :max_threads => app_info['max_threads'] || 10
+          :max_threads => app_info['max_threads'] || 10,
+          :reset_redis => reset_redis
         )
       end
 

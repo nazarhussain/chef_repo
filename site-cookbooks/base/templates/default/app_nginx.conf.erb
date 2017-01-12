@@ -1,3 +1,10 @@
+<% if @redirect_to_https %>
+server {
+    listen <%= node['nginx']['port'] || '80' %>;
+    server_name <%= @domain_names.join(' ') %>;
+    return 301 https://$host$request_uri;
+}
+<% else %>
 server {
   listen <%= node['nginx']['port'] || '80' %>;
   server_name <%= @domain_names.join(' ') %>;
@@ -28,6 +35,7 @@ server {
   client_max_body_size 4G;
   keepalive_timeout 10;
 }
+<% end %>
 
 <% if @enable_ssl %>
 
@@ -36,6 +44,8 @@ server {
 
   ssl_certificate <%= @applications_root %>/<%= @name %>/shared/config/certificate.crt;
   ssl_certificate_key <%= @applications_root %>/<%= @name %>/shared/config/certificate.key;
+    <%= @ssl_extras.join("\n") %>
+
 
   server_name <%= @domain_names.join(' ') %>;
 
