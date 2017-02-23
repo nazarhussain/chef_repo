@@ -12,6 +12,8 @@ server {
 
   try_files $uri/index.html $uri.html $uri @app;
 
+  <%= @nginx_extras.join("\n") %>
+
   location ^~ /assets/ {
     gzip_static on;
     expires max;
@@ -44,12 +46,14 @@ server {
 
   ssl_certificate <%= @applications_root %>/<%= @name %>/shared/config/certificate.crt;
   ssl_certificate_key <%= @applications_root %>/<%= @name %>/shared/config/certificate.key;
-    <%= @ssl_extras.join("\n") %>
+  <%= @ssl_extras.join("\n") %>
 
 
   server_name <%= @domain_names.join(' ') %>;
 
   root <%= @applications_root %>/<%= @name %>/current/public;
+
+  <%= @nginx_extras.join("\n") %>
 
   location ^~ /assets/ {
     gzip_static on;

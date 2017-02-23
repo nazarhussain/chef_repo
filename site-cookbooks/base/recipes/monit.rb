@@ -138,5 +138,19 @@ if applications
         end
       end
     end
+
+    if app_info[:scripts]
+      app_info[:scripts].each do |script|
+        app_info[:scripts].each do |script_name, script_info|
+          monit_check "#{app}_script_#{script_name}" do
+            with "with pidfile #{script_info[:pid]}"
+            start_program "/bin/su - #{deploy_user} -c 'cd #{current_path} && #{script_info[:start_command]}'"
+            stop_program "/bin/su - #{deploy_user} -c 'cd #{current_path} && #{script_info[:stop_command]}'"
+            check "if cpu is greater than 70% for 5 cycles then restart"
+            extra ["group #{app}-scripts" ]
+          end
+        end
+      end
+    end
   end
 end

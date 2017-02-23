@@ -120,6 +120,7 @@ if applications
 
         enable_ssl = true
         ssl_extras = app_info['ssl_info']['extras'] || []
+        nginx_extras = app_info['nginx_extras'] || []
         redirect_to_https = app_info['ssl_info']['redirect_to_https'] || false
       end
 
@@ -132,6 +133,7 @@ if applications
                   :applications_root=> applications_root,
                   :enable_ssl => enable_ssl,
                   :ssl_extras => ssl_extras,
+                  :nginx_extras => nginx_extras,
                   :redirect_to_https => redirect_to_https
         notifies :reload, resources(:service => "nginx")
       end
