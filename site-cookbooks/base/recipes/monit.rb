@@ -11,7 +11,7 @@ monit 'monit' do
   httpd_port m_config[:port]
   httpd_password m_config[:password]
   httpd_username m_config[:username]
-  provider :system
+  version '5.25.2'
 end
 
 directory '/etc/monit/conf.d' do
@@ -43,8 +43,9 @@ applications_root = node[:rails][:applications_root]
 applications = node[:rails][:applications]
 
 if applications
-  monit_check 'nginx' do
-    check 'if failed port 80 protocol http request "/" then restart'
+  monit_check 'nginx.service' do
+    with 'with pidfile /var/run/nginx.pid'
+    check 'if failed port 80 then restart'
     extra [ 'every 5 cycles',
             'group www' ]
   end
@@ -83,40 +84,21 @@ if applications
       app_info[:sidekiq].each do |sidekiq_name, sidekiq_info|
 
         if sidekiq_info[:queues]
-          start_script = <<-EOS
-          /bin/su - #{deploy_user} -c 'cd #{current_path} && bundle exec sidekiq
-          --concurrency #{sidekiq_info[:concurrency]}
-          --pidfile #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid
-          --environment #{rails_env}
-          --logfile #{shared_path}/log/sidekiq_#{sidekiq_name}.log
-          #{sidekiq_info[:queues].map{|q| " --queue #{q} "}.join(' ')}
-          #{"--require #{sidekiq_info[:require]}" if sidekiq_info[:require]}
-          --daemon'
-          EOS
-        end
-
-        if sidekiq_info[:config]
-          start_script = <<-EOS
-          /bin/su - #{deploy_user} -c 'cd #{current_path} && bundle exec sidekiq
-          -C #{sidekiq_info[:config]}
-          --pidfile #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid
-          --environment #{rails_env}
-          --logfile #{shared_path}/log/sidekiq_#{sidekiq_name}.log
-          #{"--require #{sidekiq_info[:require]}" if sidekiq_info[:require]}
-          --daemon'
-          EOS
-        end
-
-        stop_script = <<-EOS
-          /bin/su - #{deploy_user} -c 'cd #{current_path} && bundle exec sidekiqctl stop #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid 15'
-        EOS
-
-        monit_check "#{app}_sidekiq_#{sidekiq_name}" do
-          with "with pidfile #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid"
-          start_program start_script.gsub(/[\n\s+]/,' ')
-          stop_program stop_script.gsub(/[\n\s+]/,' ')
-          check "if cpu is greater than 70% for 5 cycles then restart"
-          extra ["group #{app}-sidekiq" ]
+          monit_check "#{app}_sidekiq_#{sidekiq_name}" do
+            with "with pidfile #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid"
+            start_program "#{shared_path}/scripts/sidekiq.sh start #{sidekiq_name} '--concurrency #{sidekiq_info[:concurrency] || 2} #{sidekiq_info[:queues].map{|q| " --queue #{q} "}.join(' ')} #{"--require #{sidekiq_info[:require]}" if sidekiq_info[:require]}'"
+            stop_program "#{shared_path}/scripts/sidekiq.sh stop #{sidekiq_name}"
+            check "if cpu is greater than 70% for 5 cycles then restart"
+            extra ["group #{app}-sidekiq" ]
+          end
+        else sidekiq_info[:config]
+          monit_check "#{app}_sidekiq_#{sidekiq_name}" do
+            with "with pidfile #{shared_path}/pids/sidekiq_#{sidekiq_name}.pid"
+            start_program "#{shared_path}/scripts/sidekiq.sh start #{sidekiq_name}"
+            stop_program "#{shared_path}/scripts/sidekiq.sh stop #{sidekiq_name}"
+            check "if cpu is greater than 70% for 5 cycles then restart"
+            extra ["group #{app}-sidekiq" ]
+          end
         end
       end
     end

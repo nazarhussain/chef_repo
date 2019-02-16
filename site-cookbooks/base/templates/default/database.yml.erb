@@ -6,4 +6,4 @@
   pool: <%= @database_info['pool'] %>
   timeout: <%= @database_info['timeout'] %>
   database: <%= @database_info['database'] %>
-  encoding: utf8
+  encoding: <%= @database_info['encoding'] || 'utf8' %> 

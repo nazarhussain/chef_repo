@@ -10,9 +10,9 @@ server {
   server_name <%= @domain_names.join(' ') %>;
   root <%= @applications_root %>/<%= @name %>/current/public;
 
-  try_files $uri/index.html $uri.html $uri @app;
-
   <%= @nginx_extras.join("\n") %>
+
+  try_files $uri/index.html $uri.html $uri @app;
 
   location ^~ /assets/ {
     gzip_static on;

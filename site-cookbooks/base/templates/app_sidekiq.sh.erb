@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+# This monit wrapper script will be called by monit as root
+# Edit these variables to your liking
+
+APP_NAME=<%= @name %>
+RAILS_ENV=<%= @rails_env %>
+USER=<%= @deploy_user %>
+APP_DIR=<%= "#{@applications_root}/#{@name}/current" %>
+SHARED_DIR=<%= "#{@applications_root}/#{@name}/shared" %>
+SIDEKIQ_CONFIG_FILE=<%= "#{@applications_root}/#{@name}/current/config/sidekiq.yml" %>
+
+case "$1" in
+  start*)
+    # If name is not provided
+    if [ -z "$2" ];then
+      logger -t "${APP_NAME}" -s "start called with no name identifier"
+      exit 1
+    fi 
+
+    SIDEKIQ_NAME="$2"
+    echo "Starting sidekiq $SIDEKIQ_NAME..."
+
+    # If config is not provided use default config
+    if [ -z "$3" ];then
+      /bin/su - $USER -c "cd $APP_DIR && RAILS_ENV=$RAILS_ENV bundle exec sidekiq -C $SIDEKIQ_CONFIG_FILE --pidfile $SHARED_DIR/pids/sidekiq_$SIDEKIQ_NAME.pid --environment $RAILS_ENV --logfile $SHARED_DIR/log/sidekiq_$SIDEKIQ_NAME.log --daemon" 
+    else 
+      /bin/su - $USER -c "cd $APP_DIR && RAILS_ENV=$RAILS_ENV bundle exec sidekiq $3 --pidfile $SHARED_DIR/pids/sidekiq_$SIDEKIQ_NAME.pid --environment $RAILS_ENV --logfile $SHARED_DIR/log/sidekiq_$SIDEKIQ_NAME.log --daemon" 
+    fi
+    echo "done"
+    ;;
+
+  stop*)
+    # If name is not provided
+    if [ -z "$2" ];then
+      logger -t "${APP_NAME}" -s "stop called with no name identifier"
+      exit 1
+    fi 
+
+    SIDEKIQ_NAME="$2"
+    echo "Stopping sidekiq $SIDEKIQ_NAME..."
+      /bin/su - $USER -c "cd $APP_DIR && bundle exec sidekiqctl stop $SHARED_DIR/pids/sidekiq_$SIDEKIQ_NAME.pid 15"
+
+    echo "done"
+    ;;
+
+  status*)
+    # If name is not provided
+    if [ -z "$2" ];then
+      logger -t "${APP_NAME}" -s "stop called with no name identifier"
+      exit 1
+    fi 
+
+    SIDEKIQ_NAME="$2"
+    echo "Schecking status sidekiq $SIDEKIQ_NAME..."
+
+    if [ -e $SIDEKIQ_PID_FILE ] ; then
+      if cat $SIDEKIQ_PID_FILE | xargs pgrep -P > /dev/null ; then
+        echo "Sidekiq $SIDEKIQ_NAME running."
+      else
+        echo "No sidekiq process found"
+      fi
+    else
+      echo "No sidekiq pid file found"
+    fi  
+    ;;
+
+  *)
+    echo "Usage: sidekiq {start|stop|status} {name} {sidekiq-config}" >&2
+    ;;
+esac

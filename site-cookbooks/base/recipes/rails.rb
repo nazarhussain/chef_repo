@@ -99,6 +99,7 @@ if applications
       enable_ssl = false
       reset_redis = app_info['reset_redis'] || false
       redirect_to_https = false
+      nginx_extras = app_info['nginx_extras'] || []
 
       # Loading up SSL Information
       if app_info['ssl_info']
@@ -119,8 +120,7 @@ if applications
         end
 
         enable_ssl = true
-        ssl_extras = app_info['ssl_info']['extras'] || []
-        nginx_extras = app_info['nginx_extras'] || []
+        ssl_extras = app_info['ssl_info']['extras'] || []        
         redirect_to_https = app_info['ssl_info']['redirect_to_https'] || false
       end
 
@@ -156,6 +156,8 @@ if applications
 
       # Setting up puma startup script
       template "#{applications_root}/#{app}/shared/scripts/puma.sh" do
+        owner deploy_user
+        group deploy_user
         mode 0750
         source "app_puma.sh.erb"
         variables(
@@ -166,6 +168,20 @@ if applications
             :number_of_workers => app_info['number_of_workers'] || 2,
             :min_threads => app_info['min_threads'] || 3,
             :max_threads => app_info['max_threads'] || 10
+        )
+      end
+
+      # Setting up sidekiq startup script
+      template "#{applications_root}/#{app}/shared/scripts/sidekiq.sh" do
+        owner deploy_user
+        group deploy_user
+        mode 0750
+        source "app_sidekiq.sh.erb"
+        variables(
+            :name => app,
+            :rails_env=>rails_env,
+            :deploy_user => deploy_user,
+            :applications_root=> applications_root        
         )
       end
 
