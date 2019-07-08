@@ -1,0 +1,174 @@
+{
+  // Common and shared configuration about which effects all others.
+  // Add "role[base]" to the run_list
+  "base": {
+    "users": ["deploy"], // List of users to create, generally one user is created for deployment
+    "keys": []           // List of public keys, will associate to each user specified. These keys will be allowed to ssh to the VPS.
+  },
+
+  // All Ruby related configuration
+  // Add "role[ruby]" to the run_list
+  "ruby": {
+    "version": "2.4.5"  // Version of Ruby to user on the server
+  },
+
+  // The role "role[ruby]" uses "rbenv" internally you can provide any configuration here
+  "rbenv": {
+    "root_path": "/opt/rbenv/"
+  },
+
+  // If you want to install NodeJS on your server.
+  // Add "role[nodejs]" to the run_list
+  "nodejs": {
+    "version": "6.12.0",    // Version of the NodeJS
+    "binary": {
+      "checksum": "f011ba"  // Checksum to verify (optional)
+    }
+  },
+
+  // If you need redis on your server
+  // Add "role[nodejs]" to the run_list
+  "redisio": {
+    "version": "3.2.3",     // Version of the redis
+    "default_settings": {   // All configurations for the redis
+      "maxmemory": "500mb"  // example config for max memory
+    }
+  },
+
+  // If you want to monitor the services and app server
+  // running on your server add "role[monit]" to run_list
+  "monit": {
+    "interval": 15,
+    "password": "",           // Password for http interface
+    "mail": {
+      "server": "",           // SMTP email server for notifications
+      "port": 587,
+      "username": "",         // SMTP username
+      "password": "",         // SMTP password
+      "recipients": [""]      // List of recipients you want to send notifications
+    }
+  },
+
+  // To install the PostgreSQL server add "role[postgresql]"
+  "postgresql": {
+
+    // Version of the PostgreSQL
+    "version": "9.3",
+
+    // The master/root password for postgres user
+    "password": {
+      "postgres": ""
+    },
+
+    // Configurations for the PostgreSQL
+    "config": {
+      "listen_addresses": "127.0.0.1",
+      "port": 5432
+    },
+
+    // List of all users you want to create on PostgreSQL
+    "users": {
+      // Key will be used as username
+      "reputami": {
+        // Password for that user
+        "password": "",
+
+        // List of databases that should be created and authorized for that user
+        "databases": []
+      }
+    }
+  },
+
+  // To setup rails applications you can provide all configurations here
+  // and also add "role[rails]" to the run_list
+  "rails": {
+    // The root folder to run the apps
+    "application_root": "/home/deploy/apps",
+
+    // Provide all apps to configure
+    "applications": {
+
+      // Particular application configuration
+      "app_1": {
+        // The user which owns the directory for the app
+        "deploy_user": "deploy",
+
+        // If you just want backend services e.g. rake jobs etc
+        "backend": false,
+
+        // Domains that should be configured for this app in Nginx
+        "domain_names": [ "app1.mydomain.com"],
+
+        // All env variables, these will be shared to all apps on the server
+        "env": {
+          // One example env variable that is usually required to run Rails in production
+          // You can run "rails secret" or "rake secret" to generate a key (depending on version of rails)
+          "SECRET_KEY_BASE": "xxxxxxxx"
+        },
+
+        // List of all system packages you want to install on VPS
+        // these are usually required to install Gems with native extensions
+        "packages": ["imagemagick", "libpq-dev", "postgresql-client"],
+
+        // The RAILS_ENV you want to run the app, it will create relevant environment variable
+        "rails_env": "staging",
+
+        // Rails apps are run via Puma server, so you can set number of workers
+        // right value depends upon the VPS spec and server load
+        "number_of_workers": 3,
+
+        // Min/Max threads per worker
+        "min_threads": 0,
+        "max_threads": 5,
+
+        // If you want to reset the redis on each worker
+        // this may required if to have fresh connection for each worker
+        "reset_redis": true,
+
+        // The database information for the application
+        // it will automatically generate database.yml for you
+        "database_info": {
+
+          // DB  Adapter, you can use MySQL but mostly tested with PostgreSQL
+          "adapter": "postgresql",
+
+          // The name of database associated to the app
+          // If you just specify this config and there is "role[postgresql]"
+          // added to the run_list, it will try to fetch user/password of that database
+          // from the configuration of defined in same file
+          "database": "",
+
+          // Hostname and other information for database
+          "host": "",
+          "username": "",
+          "password": "",
+          "pool": 25,
+          "timeout": 5000,
+          "encoding": ""
+        },
+
+        // If you want to specify extra configuration for the Nginx site
+        // each item in the array will be added as one line to configuration
+        "nginx_extras": [],
+
+        // All the sidekiq instances you want to run
+        // Each child of this object will be one instance of sidekiq
+        "sidekiq": {
+
+          // Run instance for sidekiq with name "default"
+          "default": {
+
+            // Does the app have its own sidekiq.yml then rest of configurations will be ignored
+            "config": true,
+
+            // List of queues you want to associate with this job
+            "queues": ["default", "mail"],
+
+            // The number of processes you want to run for this sidekiq instance
+            "concurrency": 1
+          },
+        }
+      }
+    }
+  }
+}
