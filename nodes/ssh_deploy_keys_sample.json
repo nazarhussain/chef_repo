@@ -1,7 +1,0 @@
-{
-  "base": {
-    "keys": [
-      "<enter the contents of an id_rsa.pub here>"
-    ]
-  }
-}
