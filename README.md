@@ -25,7 +25,9 @@ This step will create a file `nodes/<ip>.json` file. This is the file where you 
 Once you had done specifying every detail of the server in that JSON file. Then run the following command.
 Keep that JSON file saved and backup, as it will contain the passwords you specify for different components. 
 
-**Never commit that JSON file to any version control.**    
+**Never commit that JSON file to any version control.**
+
+Now run the following command to setup the complete recipe on the server.     
 
 ```sh
 bundle exec knife solo cook root@ip
